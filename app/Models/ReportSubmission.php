@@ -49,4 +49,9 @@ class ReportSubmission extends Model
     {
         return $this->hasOne(ReportVersion::class)->latestOfMany('version_number');
     }
+
+    public function validation_histories()
+    {
+        return $this->hasMany(ReportValidationHistory::class, 'report_submission_id')->latest();
+    }
 }

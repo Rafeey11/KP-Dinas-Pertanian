@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Services\AuditLogService;
 
 class UserController extends Controller
 {
@@ -29,14 +30,32 @@ class UserController extends Controller
             'username' => 'required|string|unique:users,username|max:255',
             'email' => 'required|string|email|unique:users,email|max:255',
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:admin,bpp',
+            'role' => 'required|in:admin,bpp,admin_tim_kerja',
             'bpp_id' => 'nullable|exists:bpps,id|required_if:role,bpp',
+            'bpp_binaans' => 'nullable|array',
+            'bpp_binaans.*' => 'exists:bpps,id'
         ]);
 
-        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
-        if ($validated['role'] === 'admin') $validated['bpp_id'] = null;
+        $bppBinaans = $request->input('bpp_binaans', []);
+        unset($validated['bpp_binaans']);
 
-        \App\Models\User::create($validated);
+        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
+        if (in_array($validated['role'], ['admin', 'admin_tim_kerja'])) $validated['bpp_id'] = null;
+
+        $user = \App\Models\User::create($validated);
+
+        if ($validated['role'] === 'admin_tim_kerja') {
+            $user->bpp_binaans()->sync($bppBinaans);
+        }
+
+        AuditLogService::log(
+            'created', 
+            'User', 
+            $user, 
+            "Pembuatan akun {$user->role} bernama {$user->name}.", 
+            null, 
+            $user->toArray()
+        );
 
         return redirect()->route('admin.users.index')->with('success', 'Akun pengguna berhasil ditambahkan.');
     }
@@ -51,13 +70,17 @@ class UserController extends Controller
     public function update(Request $request, string $id)
     {
         $user = \App\Models\User::findOrFail($id);
+        $oldData = $user->toArray();
+        $oldBinaans = $user->bpp_binaans()->pluck('bpps.id')->toArray();
 
         $rules = [
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,'.$id,
             'email' => 'required|string|email|max:255|unique:users,email,'.$id,
-            'role' => 'required|in:admin,bpp',
+            'role' => 'required|in:admin,bpp,admin_tim_kerja',
             'bpp_id' => 'nullable|exists:bpps,id|required_if:role,bpp',
+            'bpp_binaans' => 'nullable|array',
+            'bpp_binaans.*' => 'exists:bpps,id'
         ];
 
         if ($request->filled('password')) {
@@ -68,10 +91,39 @@ class UserController extends Controller
 
         if ($request->filled('password')) {
             $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
+            $oldData['password'] = '***';
         }
-        if ($validated['role'] === 'admin') $validated['bpp_id'] = null;
+        if (in_array($validated['role'], ['admin', 'admin_tim_kerja'])) $validated['bpp_id'] = null;
+
+        $bppBinaans = $request->input('bpp_binaans', []);
+        unset($validated['bpp_binaans']);
 
         $user->update($validated);
+
+        if ($validated['role'] === 'admin_tim_kerja') {
+            $user->bpp_binaans()->sync($bppBinaans);
+            if ($oldBinaans !== $bppBinaans) {
+                AuditLogService::log(
+                    'updated', 
+                    'Tim Kerja', 
+                    $user, 
+                    "Update wilayah binaan Tim Kerja {$user->name}.", 
+                    ['binaans' => $oldBinaans], 
+                    ['binaans' => $bppBinaans]
+                );
+            }
+        } else {
+            $user->bpp_binaans()->sync([]);
+        }
+
+        AuditLogService::log(
+            'updated', 
+            'User', 
+            $user, 
+            "Perubahan data akun {$user->name}.", 
+            $oldData, 
+            $user->fresh()->toArray()
+        );
 
         return redirect()->route('admin.users.index')->with('success', 'Akun pengguna berhasil diperbarui.');
     }
@@ -80,10 +132,22 @@ class UserController extends Controller
     {
         $user = \App\Models\User::findOrFail($id);
         if ($user->id === auth()->id()) {
-            return redirect()->route('admin.users.index')->withErrors(['error' => 'Anda tidak bisa menghapus akun Anda sendiri.']);
+            return redirect()->route('admin.users.index')->withErrors(['error' => 'Anda tidak bisa menonaktifkan akun Anda sendiri.']);
         }
-        $user->delete();
+        
+        $oldData = $user->toArray();
+        $user->update(['status' => 'inactive']);
 
-        return redirect()->route('admin.users.index')->with('success', 'Akun pengguna berhasil dihapus.');
+        AuditLogService::log(
+            'deactivated', 
+            'User', 
+            $user, 
+            "Penonaktifan akun {$user->name}.", 
+            $oldData, 
+            $user->fresh()->toArray()
+        );
+
+        return redirect()->route('admin.users.index')->with('success', 'Akun pengguna berhasil dinonaktifkan.');
     }
 }
+

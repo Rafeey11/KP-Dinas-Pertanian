@@ -62,7 +62,7 @@
         <div class="grid-3">
             @foreach($latestNews as $news)
             <div class="card news-card">
-                <img src="{{ $news->thumbnail ? asset('storage/'.$news->thumbnail) : 'https://placehold.co/600x400/1B5E20/ffffff?text=CWS+Penyuluh' }}" alt="{{ $news->title }}" class="card-img">
+                <img src="{{ $news->thumbnail ? asset('storage/'.$news->thumbnail) : 'https://placehold.co/600x400/1B5E20/ffffff?text=CWS+GARUT' }}" alt="{{ $news->title }}" class="card-img">
                 <div class="card-body">
                     <div class="news-meta">
                         <span class="news-category">{{ $news->category->name ?? 'Kegiatan' }}</span>
@@ -73,7 +73,7 @@
                     <div class="news-footer">
                         <div class="news-author">
                             <div class="news-author-avatar"><i class="fa-solid fa-user"></i></div>
-                            {{ Str::limit($news->penyuluh->name ?? 'Admin', 20) }}
+                            {{ Str::limit($news->penyuluh->name ?? ($news->bpp->name ?? 'Admin CWS'), 20) }}
                         </div>
                         <a href="{{ route('news.show', $news->slug) }}" class="news-readmore">Selengkapnya →</a>
                     </div>

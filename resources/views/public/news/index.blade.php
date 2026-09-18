@@ -41,7 +41,7 @@
                 <div class="news-footer">
                     <div class="news-author">
                         <div class="news-author-avatar"><i class="fa-solid fa-user"></i></div>
-                        {{ Str::limit($item->penyuluh->name ?? 'Admin', 20) }}
+                        {{ Str::limit($item->penyuluh->name ?? ($item->bpp->name ?? 'Admin CWS'), 20) }}
                     </div>
                     <a href="{{ route('news.show', $item->slug) }}" class="news-readmore">Selengkapnya →</a>
                 </div>

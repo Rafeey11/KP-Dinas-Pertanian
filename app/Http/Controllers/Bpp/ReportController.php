@@ -143,6 +143,22 @@ class ReportController extends Controller
             'uploaded_by' => auth()->id(),
         ]);
 
+        // Audit Log
+        \App\Services\AuditLogService::log(
+            'submitted',
+            'Laporan',
+            $submission,
+            "{$bpp->name} mengirim laporan {$penyuluh->name} (Versi {$newVersion}).",
+            null,
+            ['file_name' => $file->getClientOriginalName(), 'version' => $newVersion]
+        );
+
+        // Notify Admin Tim Kerja
+        $admins = $bpp->admin_tim_kerjas;
+        foreach ($admins as $admin) {
+            $admin->notify(new \App\Notifications\ReportSubmittedNotification($submission, $bpp));
+        }
+
         return redirect()->route('bpp.laporan.show', $reportRequest->id)
             ->with('success', 'Laporan untuk ' . $penyuluh->name . ' berhasil diupload (Versi ' . $newVersion . ').');
     }

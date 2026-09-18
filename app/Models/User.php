@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
@@ -32,6 +33,11 @@ class User extends Authenticatable
     public function bpp()
     {
         return $this->belongsTo(Bpp::class);
+    }
+
+    public function bpp_binaans()
+    {
+        return $this->belongsToMany(Bpp::class, 'admin_tim_kerja_bpp', 'user_id', 'bpp_id');
     }
 
     /**

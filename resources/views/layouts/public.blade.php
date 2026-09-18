@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="CWS Penyuluh - Platform informasi dan pelaporan penyuluh pertanian Kabupaten Garut">
-    <title>@yield('title', 'CWS Penyuluh') | Co Working Space Penyuluh</title>
+    <meta name="description" content="CWS GARUT - Platform informasi dan pelaporan penyuluh pertanian Kabupaten Garut">
+    <title>@yield('title', 'CWS GARUT') | CWS GARUT</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @yield('styles')
@@ -17,8 +17,8 @@
             <a href="{{ route('home') }}" class="navbar-brand">
                 <img src="{{ asset('images/logo.png') }}" alt="Logo CWS" class="navbar-brand-logo">
                 <div class="navbar-brand-text">
-                    <h1>CWS Penyuluh</h1>
-                    <span>Dinas Pertanian Kabupaten Garut</span>
+                    <h1>CWS GARUT</h1>
+                    <span>Kementerian Pertanian | BPPSDMP</span>
                 </div>
             </a>
 
@@ -31,7 +31,7 @@
             </div>
 
             @auth
-                @if(auth()->user()->role === 'admin')
+                @if(in_array(auth()->user()->role, ['admin', 'admin_tim_kerja']))
                     <a href="{{ route('admin.dashboard') }}" class="btn-login">
                         <i class="fa-solid fa-chart-pie"></i> Dashboard Admin
                     </a>
@@ -58,7 +58,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <h3><img src="{{ asset('images/logo.png') }}" alt="Logo" style="height: 28px; display: inline-block; vertical-align: middle; margin-right: 8px;"> CWS Penyuluh</h3>
+                    <h3><img src="{{ asset('images/logo.png') }}" alt="Logo" style="height: 28px; display: inline-block; vertical-align: middle; margin-right: 8px;"> CWS GARUT</h3>
                     <p>Platform informasi, kolaborasi, dan pelaporan penyuluh pertanian di Kabupaten Garut. Menghubungkan seluruh Balai Penyuluhan Pertanian.</p>
                 </div>
                 <div>
@@ -75,7 +75,7 @@
                     <div class="footer-links">
                         <a href="{{ route('about') }}">Tentang Kami</a>
                         @auth
-                            @if(auth()->user()->role === 'admin')
+                            @if(in_array(auth()->user()->role, ['admin', 'admin_tim_kerja']))
                                 <a href="{{ route('admin.dashboard') }}">Dashboard Admin</a>
                             @else
                                 <a href="{{ route('bpp.dashboard') }}">Dashboard BPP</a>
@@ -88,14 +88,14 @@
                 <div>
                     <div class="footer-title">Kontak</div>
                     <div class="footer-links">
-                        <a href="#"><i class="fa-solid fa-location-dot"></i> Jl. Pembangunan No. 181, Garut</a>
+                        <a href="#"><i class="fa-solid fa-location-dot"></i> Jl. Pembangunan No. 183, Garut</a>
                         <a href="tel:0262233155"><i class="fa-solid fa-phone"></i> (0262) 233155</a>
                         <a href="mailto:info@cws-garut.go.id"><i class="fa-solid fa-envelope"></i> info@cws-garut.go.id</a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                &copy; {{ date('Y') }} CWS Penyuluh Kabupaten Garut. All rights reserved.
+                &copy; {{ date('Y') }} CWS GARUT. All rights reserved.
             </div>
         </div>
     </footer>

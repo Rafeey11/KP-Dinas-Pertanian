@@ -12,7 +12,14 @@ class BppController extends Controller
      */
     public function index()
     {
-        $bpps = \App\Models\Bpp::orderBy('code')->get();
+        $user = auth()->user();
+        $query = \App\Models\Bpp::orderBy('code');
+        
+        if ($user->role === 'admin_tim_kerja') {
+            $query->whereIn('id', $user->bpp_binaans->pluck('id')->toArray());
+        }
+        
+        $bpps = $query->get();
         return view('admin.bpp.index', compact('bpps'));
     }
 
@@ -21,11 +28,18 @@ class BppController extends Controller
      */
     public function create()
     {
+        if (auth()->user()->role === 'admin_tim_kerja') {
+            abort(403, 'Unauthorized Access.');
+        }
         return view('admin.bpp.form');
     }
 
     public function store(Request $request)
     {
+        if (auth()->user()->role === 'admin_tim_kerja') {
+            abort(403, 'Unauthorized Access.');
+        }
+
         $validated = $request->validate([
             'code' => 'required|unique:bpps,code',
             'name' => 'required|string|max:150',
@@ -37,6 +51,7 @@ class BppController extends Controller
             'working_area' => 'nullable|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'google_maps_url' => 'nullable|url',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -50,6 +65,13 @@ class BppController extends Controller
     public function edit(string $id)
     {
         $bpp = \App\Models\Bpp::findOrFail($id);
+        
+        if (auth()->user()->role === 'admin_tim_kerja') {
+            if (!in_array($bpp->id, auth()->user()->bpp_binaans->pluck('id')->toArray())) {
+                abort(403, 'Unauthorized Access. BPP ini bukan binaan Anda.');
+            }
+        }
+
         return view('admin.bpp.form', compact('bpp'));
     }
 
@@ -57,10 +79,15 @@ class BppController extends Controller
     {
         $bpp = \App\Models\Bpp::findOrFail($id);
 
-        $validated = $request->validate([
-            'code' => 'required|unique:bpps,code,'.$id,
-            'name' => 'required|string|max:150',
-            'district' => 'required|string|max:100',
+        if (auth()->user()->role === 'admin_tim_kerja') {
+            if (!in_array($bpp->id, auth()->user()->bpp_binaans->pluck('id')->toArray())) {
+                abort(403, 'Unauthorized Access. BPP ini bukan binaan Anda.');
+            }
+        }
+
+        $isAdmin = auth()->user()->role === 'admin';
+
+        $rules = [
             'address' => 'required|string',
             'phone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:150',
@@ -68,8 +95,24 @@ class BppController extends Controller
             'working_area' => 'nullable|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'status' => 'required|in:active,inactive',
-        ]);
+            'google_maps_url' => 'nullable|url',
+        ];
+
+        if ($isAdmin) {
+            $rules['code'] = 'required|unique:bpps,code,'.$id;
+            $rules['name'] = 'required|string|max:150';
+            $rules['district'] = 'required|string|max:100';
+            $rules['status'] = 'required|in:active,inactive';
+        }
+
+        $validated = $request->validate($rules);
+
+        if (!$isAdmin) {
+            $validated['code'] = $bpp->code;
+            $validated['name'] = $bpp->name;
+            $validated['district'] = $bpp->district;
+            $validated['status'] = $bpp->status;
+        }
 
         $validated['slug'] = \Illuminate\Support\Str::slug($validated['name']);
         
@@ -80,6 +123,10 @@ class BppController extends Controller
 
     public function destroy(string $id)
     {
+        if (auth()->user()->role === 'admin_tim_kerja') {
+            abort(403, 'Unauthorized Access. Anda tidak dapat menghapus BPP.');
+        }
+
         $bpp = \App\Models\Bpp::findOrFail($id);
         
         // Hide BPP
@@ -103,7 +150,12 @@ class BppController extends Controller
 
     public function export()
     {
-        $bpps = \App\Models\Bpp::orderBy('code')->get();
+        $user = auth()->user();
+        $query = \App\Models\Bpp::orderBy('code');
+        if ($user->role === 'admin_tim_kerja') {
+            $query->whereIn('id', $user->bpp_binaans->pluck('id')->toArray());
+        }
+        $bpps = $query->get();
         
         $headers = [
             "Content-type"        => "text/csv",

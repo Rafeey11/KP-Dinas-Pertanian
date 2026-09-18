@@ -109,10 +109,11 @@
                 </div>
             </div>
 
-            @if($bpp->latitude && $bpp->longitude)
+            @if($bpp->latitude && $bpp->longitude || $bpp->google_maps_url)
             <div class="card">
                 <div class="card-body">
                     <h4 class="font-bold mb-4" style="padding-bottom: var(--sp-3); border-bottom: 1px solid var(--color-border);">Lokasi</h4>
+                    @if($bpp->latitude && $bpp->longitude)
                     <div style="margin-bottom: var(--sp-4); border-radius: var(--rounded-md); overflow: hidden; height: 250px;">
                         <iframe 
                             width="100%" 
@@ -124,9 +125,23 @@
                             src="https://maps.google.com/maps?q={{ $bpp->latitude }},{{ $bpp->longitude }}&z=15&output=embed">
                         </iframe>
                     </div>
-                    <a href="https://maps.google.com/?q={{ $bpp->latitude }},{{ $bpp->longitude }}" target="_blank" class="btn btn-outline btn-block btn-sm">
-                        <i class="fa-solid fa-directions"></i> Buka di Google Maps
+                    @endif
+                    
+                    @if($bpp->google_maps_url)
+                    <a href="{{ $bpp->google_maps_url }}" target="_blank" class="btn btn-outline btn-block btn-sm" style="margin-bottom: 8px;">
+                        <i class="fa-solid fa-map-location-dot"></i> Buka di Google Maps
                     </a>
+                    @elseif($bpp->latitude && $bpp->longitude)
+                    <a href="https://maps.google.com/?q={{ $bpp->latitude }},{{ $bpp->longitude }}" target="_blank" class="btn btn-outline btn-block btn-sm" style="margin-bottom: 8px;">
+                        <i class="fa-solid fa-directions"></i> Petunjuk Arah
+                    </a>
+                    @endif
+                    
+                    @if($bpp->latitude && $bpp->longitude)
+                    <div style="font-size: 0.8rem; color: var(--color-text-muted); text-align: center; margin-top: 8px;">
+                        {{ $bpp->latitude }}, {{ $bpp->longitude }}
+                    </div>
+                    @endif
                 </div>
             </div>
             @endif

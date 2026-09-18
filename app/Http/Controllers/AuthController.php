@@ -43,7 +43,7 @@ class AuthController extends Controller
             $user->last_login_at = now();
             $user->save();
 
-            if ($user->role === 'admin') {
+            if (in_array($user->role, ['admin', 'admin_tim_kerja'])) {
                 return redirect()->intended('/admin/dashboard');
             } elseif ($user->role === 'bpp') {
                 return redirect()->intended('/dashboard');

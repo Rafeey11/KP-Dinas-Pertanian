@@ -47,6 +47,8 @@
                         <td>
                             @if($user->role === 'admin')
                                 <span class="badge badge-primary">Administrator</span>
+                            @elseif($user->role === 'admin_tim_kerja')
+                                <span class="badge" style="background-color: #0ea5e9; color: white;">Admin Tim Kerja</span>
                             @else
                                 <span class="badge badge-success">Operator BPP</span>
                             @endif

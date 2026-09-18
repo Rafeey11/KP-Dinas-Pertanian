@@ -79,6 +79,50 @@
     </div>
 </div>
 
+{{-- STATUS LAPORAN --}}
+<h3 style="margin-bottom: var(--sp-4);">Monitoring Status Laporan Anda</h3>
+<div class="grid-4" style="margin-bottom: var(--sp-6);">
+    <div class="stat-card" style="background: #fff;">
+        <div class="stat-icon" style="color: #64748b; background: #f1f5f9;">
+            <i class="fa-solid fa-file-circle-exclamation"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-title">Belum Mengirim</div>
+            <div class="stat-value" style="color: #475569;">{{ $unsubmittedReports ?? 0 }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card" style="background: #fff;">
+        <div class="stat-icon" style="color: #eab308; background: #fef08a;">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-title">Menunggu Validasi</div>
+            <div class="stat-value" style="color: #ca8a04;">{{ $reportStats['pending'] ?? 0 }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card" style="background: #fff;">
+        <div class="stat-icon" style="color: #ef4444; background: #fecaca;">
+            <i class="fa-solid fa-rotate-left"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-title">Perlu Revisi</div>
+            <div class="stat-value" style="color: #b91c1c;">{{ $reportStats['revision'] ?? 0 }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card" style="background: #fff;">
+        <div class="stat-icon" style="color: #10b981; background: #d1fae5;">
+            <i class="fa-solid fa-check-double"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-title">Disetujui</div>
+            <div class="stat-value" style="color: #047857;">{{ $reportStats['approved'] ?? 0 }}</div>
+        </div>
+    </div>
+</div>
+
 {{-- QUICK ACTIONS --}}
 <h3 style="margin-bottom: var(--sp-4);">Aksi Cepat</h3>
 <div class="grid-2" style="gap: var(--sp-4);">
@@ -102,6 +146,38 @@
         </div>
     </a>
 </div>
+
+{{-- BERITA TERBARU --}}
+@if(isset($latestNews) && $latestNews->count() > 0)
+<div style="margin-top: var(--sp-8);">
+    <h3 style="margin-bottom: var(--sp-4); font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-newspaper" style="color: var(--color-primary);"></i> Berita Terbaru
+    </h3>
+    <div class="grid-3" style="gap: var(--sp-4);">
+        @foreach($latestNews as $news)
+        <div style="background: #fff; border: 1px solid var(--color-border); border-radius: var(--rounded); overflow: hidden; display: flex; flex-direction: column;">
+            <div style="height: 160px; overflow: hidden; background: #f3f4f6;">
+                <img src="{{ $news->thumbnail ? asset('storage/'.$news->thumbnail) : 'https://placehold.co/600x400/1B5E20/ffffff?text=CWS+GARUT' }}" alt="{{ $news->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="padding: var(--sp-4); flex: 1; display: flex; flex-direction: column;">
+                <div style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                    <span>{{ $news->category->name ?? 'Berita' }}</span>
+                    <span style="color: var(--color-text-muted);">{{ \Carbon\Carbon::parse($news->published_at ?? $news->created_at)->format('d M Y') }}</span>
+                </div>
+                <h4 style="margin: 0 0 var(--sp-2) 0; font-size: 1rem; color: var(--color-text); line-height: 1.4;">{{ Str::limit($news->title, 50) }}</h4>
+                <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--sp-3); flex: 1;">
+                    <i class="fa-solid fa-building-user"></i> {{ $news->bpp->name ?? 'CWS Pusat' }}
+                </div>
+                <p style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.5; margin-bottom: var(--sp-4); flex: 1;">
+                    {{ Str::limit(strip_tags($news->content), 80) }}
+                </p>
+                <a href="{{ route('news.show', $news->slug) }}" target="_blank" class="btn btn-outline btn-sm btn-block" style="text-align: center;">Baca Selengkapnya</a>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
 
 @endif
 @endsection

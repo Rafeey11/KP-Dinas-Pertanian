@@ -62,6 +62,12 @@
                 </div>
             </div>
 
+            <div style="margin-bottom: var(--sp-4);">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: var(--sp-2);">Link YouTube (Opsional)</label>
+                <input type="url" name="video_url" value="{{ old('video_url', $newsItem->video_url ?? '') }}" placeholder="Contoh: https://www.youtube.com/watch?v=..." style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit;">
+                <small style="color: var(--color-text-muted); font-size: 0.75rem;">Tambahkan link video YouTube yang berkaitan dengan berita.</small>
+            </div>
+
             <div style="margin-bottom: var(--sp-6);">
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: var(--sp-2);">Isi Berita / Kegiatan *</label>
                 <textarea name="content" required rows="10" style="width: 100%; padding: var(--sp-3); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit; resize: vertical; line-height: 1.6;">{{ old('content', $newsItem->content ?? '') }}</textarea>

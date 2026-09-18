@@ -12,7 +12,14 @@ class ReportValidationController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $binaans = $user->role === 'admin_tim_kerja' ? $user->bpp_binaans->pluck('id')->toArray() : [];
+
         $query = ReportSubmission::with(['penyuluh', 'bpp', 'reportRequest.reportType', 'latestVersion', 'uploader']);
+
+        if ($user->role === 'admin_tim_kerja') {
+            $query->whereIn('bpp_id', $binaans);
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -30,7 +37,11 @@ class ReportValidationController extends Controller
         }
 
         $submissions = $query->latest()->paginate(20);
-        $bpps = Bpp::orderBy('name')->get();
+        $bppsQuery = Bpp::orderBy('name');
+        if ($user->role === 'admin_tim_kerja') {
+            $bppsQuery->whereIn('id', $binaans);
+        }
+        $bpps = $bppsQuery->get();
         $reportRequests = ReportRequest::with('reportType')->latest()->get();
 
         return view('admin.report-validation.index', compact('submissions', 'bpps', 'reportRequests'));
@@ -38,16 +49,30 @@ class ReportValidationController extends Controller
 
     public function show(ReportSubmission $submission)
     {
+        $user = auth()->user();
+        if ($user->role === 'admin_tim_kerja' && !in_array($submission->bpp_id, $user->bpp_binaans->pluck('id')->toArray())) {
+            abort(403, 'Unauthorized Access.');
+        }
+
         $submission->load(['penyuluh', 'bpp', 'reportRequest.reportType', 'versions.uploader', 'uploader', 'validator']);
         return view('admin.report-validation.show', compact('submission'));
     }
 
     public function validate_report(Request $request, ReportSubmission $submission)
     {
+        $user = auth()->user();
+        if ($user->role === 'admin_tim_kerja' && !in_array($submission->bpp_id, $user->bpp_binaans->pluck('id')->toArray())) {
+            abort(403, 'Unauthorized Access.');
+        }
+
         $validated = $request->validate([
             'status' => 'required|in:approved,revision,rejected',
             'admin_notes' => 'nullable|string',
         ]);
+
+        if (in_array($validated['status'], ['revision', 'rejected']) && empty($validated['admin_notes'])) {
+            return back()->withErrors(['admin_notes' => 'Catatan admin wajib diisi jika laporan diminta revisi atau ditolak.'])->withInput();
+        }
 
         $submission->update([
             'status' => $validated['status'],
@@ -56,11 +81,37 @@ class ReportValidationController extends Controller
             'validated_at' => now(),
         ]);
 
+        $latestVersion = $submission->latestVersion;
+        if ($latestVersion) {
+            \App\Models\ReportValidationHistory::create([
+                'report_submission_id' => $submission->id,
+                'report_version_id' => $latestVersion->id,
+                'validated_by' => auth()->id(),
+                'status' => $validated['status'],
+                'notes' => $validated['admin_notes'],
+            ]);
+        }
+
         $statusLabels = [
             'approved' => 'disetujui',
             'revision' => 'diminta revisi',
             'rejected' => 'ditolak',
         ];
+
+        // Audit Log
+        \App\Services\AuditLogService::log(
+            $validated['status'] === 'revision' ? 'revision_requested' : $validated['status'],
+            'Laporan',
+            $submission,
+            "Laporan {$submission->penyuluh->name} " . $statusLabels[$validated['status']] . " oleh {$user->name}.",
+            ['status' => $submission->getOriginal('status')],
+            ['status' => $validated['status'], 'admin_notes' => $validated['admin_notes']]
+        );
+
+        // Notify BPP User
+        if ($submission->uploader) {
+            $submission->uploader->notify(new \App\Notifications\ReportValidatedNotification($submission, $validated['status'], $user->name));
+        }
 
         return redirect()->route('admin.report-validation.show', $submission->id)
             ->with('success', 'Laporan berhasil ' . ($statusLabels[$validated['status']] ?? 'diperbarui') . '.');
@@ -68,6 +119,11 @@ class ReportValidationController extends Controller
 
     public function download(ReportSubmission $submission, $versionId)
     {
+        $user = auth()->user();
+        if ($user->role === 'admin_tim_kerja' && !in_array($submission->bpp_id, $user->bpp_binaans->pluck('id')->toArray())) {
+            abort(403, 'Unauthorized Access.');
+        }
+
         $version = $submission->versions()->findOrFail($versionId);
         $filePath = storage_path('app/' . $version->file_path);
 

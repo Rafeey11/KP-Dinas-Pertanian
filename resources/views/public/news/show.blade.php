@@ -21,7 +21,7 @@
         {{-- LEFT: Article --}}
         <div>
             <div class="card">
-                <img src="{{ $newsItem->thumbnail ? asset('storage/'.$newsItem->thumbnail) : 'https://placehold.co/1200x600/1B5E20/ffffff?text=CWS+Penyuluh' }}" alt="{{ $newsItem->title }}" style="width: 100%; max-height: 450px; object-fit: cover;">
+                <img src="{{ $newsItem->thumbnail ? asset('storage/'.$newsItem->thumbnail) : 'https://placehold.co/1200x600/1B5E20/ffffff?text=CWS+GARUT' }}" alt="{{ $newsItem->title }}" style="width: 100%; max-height: 450px; object-fit: cover;">
                 <div class="card-body" style="padding: var(--sp-8);">
                     <div class="news-meta mb-4">
                         <span class="news-category">{{ $newsItem->category->name ?? 'Kegiatan' }}</span>
@@ -35,7 +35,7 @@
                             <i class="fa-solid fa-user"></i>
                         </div>
                         <div>
-                            <div class="font-semibold">{{ $newsItem->penyuluh->name ?? $newsItem->creator->name ?? 'Admin' }}</div>
+                            <div class="font-semibold">{{ $newsItem->penyuluh->name ?? ($newsItem->bpp->name ?? ($newsItem->creator->name ?? 'Admin CWS')) }}</div>
                             <div class="text-sm text-muted">{{ $newsItem->bpp->name ?? 'CWS Pusat' }}</div>
                         </div>
                     </div>
@@ -43,6 +43,26 @@
                     <div class="article-content">
                         {!! $newsItem->content !!}
                     </div>
+
+                    @if($newsItem->video_type === 'youtube' && $newsItem->video_url)
+                        @php
+                            preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $newsItem->video_url, $match);
+                            $youtubeId = $match[1] ?? null;
+                        @endphp
+                        @if($youtubeId)
+                        <div class="mt-8" style="margin-top: var(--sp-8); border-radius: var(--rounded-md); overflow: hidden; box-shadow: var(--shadow-sm);">
+                            <h4 class="font-bold mb-3" style="margin-bottom: var(--sp-3);">Video Liputan</h4>
+                            <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+                                <iframe src="https://www.youtube.com/embed/{{ $youtubeId }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                        @else
+                        <div class="mt-8" style="margin-top: var(--sp-8);">
+                            <h4 class="font-bold mb-3" style="margin-bottom: var(--sp-3);">Video Liputan</h4>
+                            <a href="{{ $newsItem->video_url }}" target="_blank" class="btn btn-outline"><i class="fa-brands fa-youtube"></i> Tonton Video di YouTube</a>
+                        </div>
+                        @endif
+                    @endif
 
                     @if($newsItem->activity_location || $newsItem->activity_date)
                     <div class="article-info-box mt-8">

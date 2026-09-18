@@ -12,7 +12,14 @@ class PenyuluhController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $binaans = $user->role === 'admin_tim_kerja' ? $user->bpp_binaans->pluck('id')->toArray() : [];
+
         $query = Penyuluh::with('bpp');
+
+        if ($user->role === 'admin_tim_kerja') {
+            $query->whereIn('bpp_id', $binaans);
+        }
 
         if ($request->filled('bpp_id')) {
             $query->where('bpp_id', $request->bpp_id);
@@ -25,19 +32,32 @@ class PenyuluhController extends Controller
         }
 
         $penyuluhs = $query->orderBy('name')->paginate(25);
-        $bpps = Bpp::orderBy('name')->get();
+        $bpps = Bpp::orderBy('name');
+        if ($user->role === 'admin_tim_kerja') {
+            $bpps->whereIn('id', $binaans);
+        }
+        $bpps = $bpps->get();
 
         return view('admin.penyuluh.index', compact('penyuluhs', 'bpps'));
     }
 
     public function create()
     {
-        $bpps = Bpp::orderBy('name')->get();
+        $user = auth()->user();
+        $bppsQuery = Bpp::orderBy('name');
+        if ($user->role === 'admin_tim_kerja') {
+            $bppsQuery->whereIn('id', $user->bpp_binaans->pluck('id')->toArray());
+        }
+        $bpps = $bppsQuery->get();
+        
         return view('admin.penyuluh.form', compact('bpps'));
     }
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+        $binaans = $user->role === 'admin_tim_kerja' ? $user->bpp_binaans->pluck('id')->toArray() : [];
+
         $validated = $request->validate([
             'bpp_id' => 'required|exists:bpps,id',
             'nip' => 'nullable|unique:penyuluhs,nip',
@@ -56,6 +76,10 @@ class PenyuluhController extends Controller
         ]);
         $validated['slug'] = Str::slug($validated['name']) . '-' . rand(100, 999);
         
+        if ($user->role === 'admin_tim_kerja' && !in_array($validated['bpp_id'], $binaans)) {
+            abort(403, 'Unauthorized Access.');
+        }
+        
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('penyuluhs', 'public');
         }
@@ -66,12 +90,31 @@ class PenyuluhController extends Controller
 
     public function edit(Penyuluh $penyuluh)
     {
-        $bpps = Bpp::orderBy('name')->get();
+        $user = auth()->user();
+        $binaans = $user->role === 'admin_tim_kerja' ? $user->bpp_binaans->pluck('id')->toArray() : [];
+
+        if ($user->role === 'admin_tim_kerja' && !in_array($penyuluh->bpp_id, $binaans)) {
+            abort(403, 'Unauthorized Access.');
+        }
+
+        $bppsQuery = Bpp::orderBy('name');
+        if ($user->role === 'admin_tim_kerja') {
+            $bppsQuery->whereIn('id', $binaans);
+        }
+        $bpps = $bppsQuery->get();
+
         return view('admin.penyuluh.form', compact('penyuluh', 'bpps'));
     }
 
     public function update(Request $request, Penyuluh $penyuluh)
     {
+        $user = auth()->user();
+        $binaans = $user->role === 'admin_tim_kerja' ? $user->bpp_binaans->pluck('id')->toArray() : [];
+
+        if ($user->role === 'admin_tim_kerja' && !in_array($penyuluh->bpp_id, $binaans)) {
+            abort(403, 'Unauthorized Access.');
+        }
+
         $validated = $request->validate([
             'bpp_id' => 'required|exists:bpps,id',
             'nip' => 'nullable|unique:penyuluhs,nip,' . $penyuluh->id,
@@ -90,6 +133,10 @@ class PenyuluhController extends Controller
         ]);
         $validated['slug'] = Str::slug($validated['name']) . '-' . rand(100, 999);
         
+        if ($user->role === 'admin_tim_kerja' && !in_array($validated['bpp_id'], $binaans)) {
+            abort(403, 'Unauthorized Access.');
+        }
+        
         if ($request->hasFile('photo')) {
             if ($penyuluh->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($penyuluh->photo)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($penyuluh->photo);
@@ -103,6 +150,13 @@ class PenyuluhController extends Controller
 
     public function destroy(Penyuluh $penyuluh)
     {
+        $user = auth()->user();
+        $binaans = $user->role === 'admin_tim_kerja' ? $user->bpp_binaans->pluck('id')->toArray() : [];
+
+        if ($user->role === 'admin_tim_kerja' && !in_array($penyuluh->bpp_id, $binaans)) {
+            abort(403, 'Unauthorized Access.');
+        }
+
         if ($penyuluh->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($penyuluh->photo)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($penyuluh->photo);
         }
@@ -112,7 +166,13 @@ class PenyuluhController extends Controller
 
     public function export()
     {
-        $penyuluhs = Penyuluh::with('bpp')->orderBy('name')->get();
+        $user = auth()->user();
+        $query = Penyuluh::with('bpp')->orderBy('name');
+        
+        if ($user->role === 'admin_tim_kerja') {
+            $query->whereIn('bpp_id', $user->bpp_binaans->pluck('id')->toArray());
+        }
+        $penyuluhs = $query->get();
         
         $headers = [
             "Content-type"        => "text/csv",

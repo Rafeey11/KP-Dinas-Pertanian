@@ -20,17 +20,17 @@
         <td>{{ $item->category->name ?? '-' }}</td>
         <td>{{ $item->bpp->name ?? '-' }}</td>
         <td><span style="font-size:0.85rem;">{{ $item->created_at->format('d M Y') }}</span></td>
-        <td>
+        <td style="white-space: nowrap;">
             @if($item->status==='pending_approval')<span class="badge badge-warning">Menunggu</span>
             @elseif($item->status==='published')<span class="badge badge-success">Dipublikasikan</span>
             @elseif($item->status==='rejected')<span class="badge badge-danger">Ditolak</span>@endif
         </td>
-        <td>
+        <td style="display: flex; gap: 6px; align-items: center; white-space: nowrap;">
             <a href="{{ route('admin.news.show', $item) }}" class="btn btn-sm btn-primary" style="padding:4px 10px;font-size:0.75rem;">Review</a>
-            <form action="{{ route('admin.news.destroy', $item) }}" method="POST" style="display:inline-block;" class="form-delete" onsubmit="return confirm('Apakah Anda yakin ingin menghapus berita ini?');"> 
+            <form action="{{ route('admin.news.destroy', $item) }}" method="POST" style="margin: 0; display: inline-flex;" class="form-delete" onsubmit="return confirm('Apakah Anda yakin ingin menghapus berita ini?');"> 
                 @csrf 
                 @method('DELETE') 
-                <button type="submit" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;"><i class="fa-solid fa-trash"></i></button>
+                <button type="submit" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5; display: inline-flex; align-items: center; height: 26px;"><i class="fa-solid fa-trash"></i></button>
             </form>
         </td>
     </tr>

@@ -1,19 +1,21 @@
 @extends('layouts.app')
 
 @section('title', 'Data BPP')
-@section('header_title', 'Manajemen Data BPP')
+@section('header_title', auth()->user()->role === 'admin_tim_kerja' ? 'Manajemen Data BPP Binaan' : 'Manajemen Data BPP')
 
 @section('content')
 <div style="background: #fff; border-radius: var(--rounded-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); overflow: hidden;">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-4) var(--sp-6);">
-        <h4 class="card-header-title">Daftar BPP di Kabupaten Garut</h4>
+        <h4 class="card-header-title">{{ auth()->user()->role === 'admin_tim_kerja' ? 'Daftar BPP Binaan' : 'Daftar BPP di Kabupaten Garut' }}</h4>
         <div style="display: flex; gap: var(--sp-2);">
             <a href="{{ route('admin.bpp.export') }}" class="btn btn-sm btn-outline">
                 <i class="fa-solid fa-file-csv"></i> Download CSV
             </a>
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('admin.bpp.create') }}" class="btn btn-sm btn-primary">
                 <i class="fa-solid fa-plus"></i> Tambah BPP
             </a>
+            @endif
         </div>
     </div>
     
@@ -52,6 +54,7 @@
                             <a href="{{ route('admin.bpp.edit', $bpp->id) }}" class="btn btn-sm btn-outline" style="padding: 4px 10px; font-size: 0.75rem;">
                                 <i class="fa-solid fa-pen"></i>
                             </a>
+                            @if(auth()->user()->role === 'admin')
                             <form action="{{ route('admin.bpp.destroy', $bpp->id) }}" method="POST" style="display: inline-block;" class="form-delete">
                                 @csrf
                                 @method('DELETE')
@@ -59,6 +62,7 @@
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </form>
+                            @endif
                         </td>
                     </tr>
                 @empty

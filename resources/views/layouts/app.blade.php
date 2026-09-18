@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') | CWS Penyuluh</title>
+    <title>@yield('title', 'Dashboard') | CWS GARUT</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @yield('styles')
@@ -166,6 +166,38 @@
             justify-content: center;
             font-weight: 600;
         }
+        
+        .notification-dropdown {
+            position: relative;
+            margin-right: var(--sp-4);
+        }
+        .notification-btn {
+            background: transparent;
+            border: none;
+            color: var(--color-text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: relative;
+            padding: var(--sp-2);
+            transition: var(--transition);
+        }
+        .notification-btn:hover {
+            color: var(--color-primary);
+        }
+        .notification-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #EF4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            min-width: 18px;
+            text-align: center;
+        }
 
         /* CONTENT AREA */
         .content-area {
@@ -220,15 +252,15 @@
             <a href="{{ route('home') }}" class="sidebar-brand">
                 <img src="{{ asset('images/logo.png') }}" alt="CWS Logo">
                 <div style="display: flex; flex-direction: column; justify-content: center;">
-                    <span>CWS Penyuluh</span>
-                    <span style="font-size: 0.7rem; font-weight: 500; opacity: 0.8; line-height: 1.2;">Dinas Pertanian<br>Kabupaten Garut</span>
+                    <span>CWS GARUT</span>
+                    <span style="font-size: 0.7rem; font-weight: 500; opacity: 0.8; line-height: 1.2;">Kementerian Pertanian<br>BPPSDMP</span>
                 </div>
             </a>
         </div>
 
         <div class="sidebar-menu">
-            @if(auth()->user()->role === 'admin')
-                {{-- ADMIN MENU --}}
+            @if(in_array(auth()->user()->role, ['admin', 'admin_tim_kerja']))
+                {{-- ADMIN & TIM KERJA MENU --}}
                 <a href="{{ route('admin.dashboard') }}" class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fa-solid fa-chart-pie"></i> Dashboard
                 </a>
@@ -236,7 +268,7 @@
                 <div class="menu-label">Manajemen</div>
                 
                 <a href="{{ route('admin.bpp.index') }}" class="menu-item {{ request()->routeIs('admin.bpp.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-building-columns"></i> Data BPP
+                    <i class="fa-solid fa-building-columns"></i> {{ auth()->user()->role === 'admin_tim_kerja' ? 'Data BPP Binaan' : 'Data BPP' }}
                 </a>
                 <a href="{{ route('admin.penyuluh.index') }}" class="menu-item {{ request()->routeIs('admin.penyuluh.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-users"></i> Data Penyuluh
@@ -244,33 +276,46 @@
                 
                 <div class="menu-label">Laporan & Evaluasi</div>
                 
+                @if(auth()->user()->role === 'admin')
                 <a href="{{ route('admin.report-requests.index') }}" class="menu-item {{ request()->routeIs('admin.report-requests.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-file-invoice"></i> Permintaan Laporan
                 </a>
+                @endif
                 <a href="{{ route('admin.report-validation.index') }}" class="menu-item {{ request()->routeIs('admin.report-validation.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-clipboard-check"></i> Validasi Laporan
                 </a>
+                @if(auth()->user()->role === 'admin')
                 <a href="{{ route('admin.report-types.index') }}" class="menu-item {{ request()->routeIs('admin.report-types.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-list"></i> Jenis Laporan
                 </a>
+                @endif
 
                 <div class="menu-label">Konten Web</div>
                 
                 <a href="{{ route('admin.news.index') }}" class="menu-item {{ request()->routeIs('admin.news.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-newspaper"></i> Persetujuan Berita
                 </a>
+                
+                @if(auth()->user()->role === 'admin')
                 <a href="{{ route('admin.videos.index') }}" class="menu-item {{ request()->routeIs('admin.videos.*') ? 'active' : '' }}">
                     <i class="fa-brands fa-youtube"></i> Video Edukasi
                 </a>
-                <a href="{{ route('admin.documents.index') }}" class="menu-item {{ request()->routeIs('admin.documents.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-folder-open"></i> Bank Data / SOP
+                @endif
+                
+                <a href="{{ route('admin.bank-sops.index') }}" class="menu-item {{ request()->routeIs('admin.bank-sops.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-folder-open"></i> Bank SOP
                 </a>
 
+                @if(auth()->user()->role === 'admin')
                 <div class="menu-label">Pengaturan</div>
                 
                 <a href="{{ route('admin.users.index') }}" class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-user-shield"></i> Akun BPP
+                    <i class="fa-solid fa-user-shield"></i> Akun Pengguna
                 </a>
+                <a href="{{ route('admin.audit-logs.index') }}" class="menu-item {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-list-check"></i> Audit Log
+                </a>
+                @endif
 
             @elseif(auth()->user()->role === 'bpp')
                 {{-- BPP MENU --}}
@@ -305,8 +350,8 @@
                 </a>
 
                 <div class="menu-label">Sumber Daya</div>
-                <a href="{{ route('bpp.documents.index') }}" class="menu-item {{ request()->routeIs('bpp.documents.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-folder-open"></i> Bank Data / SOP
+                <a href="{{ route('bpp.bank-sops.index') }}" class="menu-item {{ request()->routeIs('bpp.bank-sops.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-folder-open"></i> Bank SOP
                 </a>
             @endif
 
@@ -340,11 +385,25 @@
                     <i class="fa-solid fa-globe"></i> Lihat Web
                 </a>
                 
+                @php
+                    $unreadCount = auth()->user()->unreadNotifications->count();
+                @endphp
+                <div class="notification-dropdown">
+                    <button class="notification-btn" onclick="window.location.href='{{ route('notifications.index') }}'">
+                        <i class="fa-regular fa-bell"></i>
+                        @if($unreadCount > 0)
+                        <span class="notification-badge">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
+                        @endif
+                    </button>
+                </div>
+
                 <div class="user-info">
                     <div class="user-name">{{ auth()->user()->name }}</div>
                     <div class="user-role">
                         @if(auth()->user()->role === 'admin')
                             Administrator CWS
+                        @elseif(auth()->user()->role === 'admin_tim_kerja')
+                            Admin Tim Kerja
                         @else
                             Operator {{ auth()->user()->bpp->name ?? 'BPP' }}
                         @endif

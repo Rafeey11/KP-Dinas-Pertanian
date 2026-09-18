@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | CWS Penyuluh</title>
+    <title>Login | CWS GARUT</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -23,15 +23,15 @@
     <div class="split-left">
         <div class="split-left-content">
             <img src="{{ asset('images/logo.png') }}" alt="Logo" style="width: 80px; margin-bottom: 2rem; background: white; padding: 10px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2;">Sistem Informasi Penyuluh Pertanian</h1>
-            <p style="font-size: 1.2rem; opacity: 0.9; line-height: 1.6; max-width: 400px;">Dinas Pertanian Kabupaten Garut. Mendukung ketahanan pangan melalui digitalisasi dan evaluasi kinerja penyuluh.</p>
+            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2;">CWS GARUT</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9; line-height: 1.6; max-width: 400px;">Sistem Informasi Co-Working Space (CWS) Kementerian Pertanian, Badan Penyuluhan dan Pengembangan Sumber Daya Manusia Pertanian (BPPSDMP) wilayah Garut.</p>
         </div>
     </div>
 
     <div class="split-right">
         <div class="login-box">
             <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--color-text);">Selamat Datang</h2>
-            <p style="color: var(--color-text-muted); margin-bottom: 2.5rem; font-size: 0.9rem;">Masuk ke akun Admin CWS atau BPP Anda</p>
+            <p style="color: var(--color-text-muted); margin-bottom: 2.5rem; font-size: 0.9rem;">Masuk ke akun Admin CWS atau BPP atau Admin Tim Kerja Anda</p>
 
             <form action="{{ route('login') }}" method="POST">
                 @csrf

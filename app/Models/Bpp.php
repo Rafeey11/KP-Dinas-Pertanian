@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Bpp extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $guarded = [];
 
@@ -29,5 +30,10 @@ class Bpp extends Model
     public function videos()
     {
         return $this->hasMany(Video::class);
+    }
+
+    public function admin_tim_kerjas()
+    {
+        return $this->belongsToMany(User::class, 'admin_tim_kerja_bpp', 'bpp_id', 'user_id');
     }
 }

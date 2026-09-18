@@ -13,10 +13,10 @@ class PublicController extends Controller
     public function home()
     {
         $stats = [
-            'bpp_count' => Bpp::count(),
-            'penyuluh_count' => Penyuluh::count(),
+            'bpp_count' => Bpp::where('status', 'active')->count(),
+            'penyuluh_count' => Penyuluh::where('status', 'active')->count(),
             'news_count' => News::where('status', 'published')->count(),
-            'district_count' => Bpp::distinct('district')->count(),
+            'district_count' => Bpp::where('status', 'active')->distinct('district')->count(),
         ];
 
         $latestNews = News::where('status', 'published')

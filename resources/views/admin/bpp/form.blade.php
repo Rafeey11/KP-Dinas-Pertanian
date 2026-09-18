@@ -35,17 +35,17 @@
             <div class="grid-2" style="margin-bottom: var(--sp-4);">
                 <div>
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: var(--sp-2);">Kode BPP *</label>
-                    <input type="text" name="code" value="{{ old('code', $bpp->code ?? '') }}" required style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit;">
+                    <input type="text" name="code" value="{{ old('code', $bpp->code ?? '') }}" required {{ auth()->user()->role !== 'admin' ? 'readonly' : '' }} style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit; {{ auth()->user()->role !== 'admin' ? 'background: var(--color-bg); cursor: not-allowed;' : '' }}">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: var(--sp-2);">Kecamatan *</label>
-                    <input type="text" name="district" value="{{ old('district', $bpp->district ?? '') }}" required style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit;">
+                    <input type="text" name="district" value="{{ old('district', $bpp->district ?? '') }}" required {{ auth()->user()->role !== 'admin' ? 'readonly' : '' }} style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit; {{ auth()->user()->role !== 'admin' ? 'background: var(--color-bg); cursor: not-allowed;' : '' }}">
                 </div>
             </div>
 
             <div style="margin-bottom: var(--sp-4);">
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: var(--sp-2);">Nama BPP *</label>
-                <input type="text" name="name" value="{{ old('name', $bpp->name ?? '') }}" required style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit;">
+                <input type="text" name="name" value="{{ old('name', $bpp->name ?? '') }}" required {{ auth()->user()->role !== 'admin' ? 'readonly' : '' }} style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit; {{ auth()->user()->role !== 'admin' ? 'background: var(--color-bg); cursor: not-allowed;' : '' }}">
             </div>
 
             <div style="margin-bottom: var(--sp-4);">
@@ -71,7 +71,7 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: var(--sp-2);">Status *</label>
-                    <select name="status" required style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit;">
+                    <select name="status" required {{ auth()->user()->role !== 'admin' ? 'disabled' : '' }} style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit; {{ auth()->user()->role !== 'admin' ? 'background: var(--color-bg); cursor: not-allowed;' : '' }}">
                         <option value="active" {{ old('status', $bpp->status ?? '') === 'active' ? 'selected' : '' }}>Aktif</option>
                         <option value="inactive" {{ old('status', $bpp->status ?? '') === 'inactive' ? 'selected' : '' }}>Nonaktif</option>
                     </select>
@@ -81,6 +81,11 @@
             <div style="margin-bottom: var(--sp-6);">
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: var(--sp-2);">Wilayah Kerja (Deskripsi)</label>
                 <textarea name="working_area" rows="2" style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit; resize: vertical;">{{ old('working_area', $bpp->working_area ?? '') }}</textarea>
+            </div>
+
+            <div style="margin-bottom: var(--sp-4);">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: var(--sp-2);">Google Maps URL (Opsional)</label>
+                <input type="url" name="google_maps_url" value="{{ old('google_maps_url', $bpp->google_maps_url ?? '') }}" placeholder="Contoh: https://maps.app.goo.gl/..." style="width: 100%; padding: var(--sp-2); border: 1px solid var(--color-border); border-radius: var(--rounded); font-family: inherit;">
             </div>
 
             <div style="margin-bottom: var(--sp-4);">

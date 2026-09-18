@@ -33,43 +33,76 @@ use App\Http\Controllers\Admin\ReportRequestController;
 use App\Http\Controllers\Admin\ReportValidationController;
 use App\Http\Controllers\Admin\NewsApprovalController;
 use App\Http\Controllers\Admin\VideoController as AdminVideoController;
+use App\Http\Controllers\Admin\BankSopController as AdminBankSopController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\NotificationController;
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+});
+
+Route::middleware(['auth', 'role:admin,admin_tim_kerja'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Master Data
+    // Master Data (Shared with Admin Tim Kerja, but filtered in controller)
     Route::get('/bpp/export', [AdminBppController::class, 'export'])->name('bpp.export');
     Route::resource('bpp', AdminBppController::class);
     
     Route::get('/penyuluh/export', [AdminPenyuluhController::class, 'export'])->name('penyuluh.export');
     Route::resource('penyuluh', AdminPenyuluhController::class);
     
-    Route::resource('users', AdminUserController::class);
-
-    // Laporan
-    Route::resource('report-types', ReportTypeController::class);
-    Route::resource('report-requests', ReportRequestController::class);
-
-    // Validasi Laporan
+    // Validasi Laporan (Shared with Admin Tim Kerja, but filtered in controller)
     Route::get('/report-validation', [ReportValidationController::class, 'index'])->name('report-validation.index');
     Route::get('/report-validation/{submission}', [ReportValidationController::class, 'show'])->name('report-validation.show');
     Route::post('/report-validation/{submission}/validate', [ReportValidationController::class, 'validate_report'])->name('report-validation.validate');
     Route::get('/report-validation/{submission}/download/{versionId}', [ReportValidationController::class, 'download'])->name('report-validation.download');
 
-    // Berita (Approval)
+    // Berita (Approval) (Shared with Admin Tim Kerja, but filtered in controller)
     Route::get('/news', [NewsApprovalController::class, 'index'])->name('news.index');
     Route::get('/news/{news}', [NewsApprovalController::class, 'show'])->name('news.show');
     Route::delete('/news/{news}', [NewsApprovalController::class, 'destroy'])->name('news.destroy');
     Route::post('/news/{news}/approve', [NewsApprovalController::class, 'approve'])->name('news.approve');
     Route::post('/news/{news}/reject', [NewsApprovalController::class, 'reject'])->name('news.reject');
 
-    // Video
-    Route::resource('videos', AdminVideoController::class);
-    Route::post('/videos/{video}/approve', [AdminVideoController::class, 'approve'])->name('videos.approve');
-    Route::post('/videos/{video}/reject', [AdminVideoController::class, 'reject'])->name('videos.reject');
+    // Bank SOP (Shared with Admin Tim Kerja, filtered in controller)
+    Route::get('/bank-sops', [AdminBankSopController::class, 'index'])->name('bank-sops.index');
 
-    // Bank Data (E-Library)
-    Route::resource('documents', App\Http\Controllers\Admin\DocumentController::class)->except('show');
+    // ADMIN ONLY ROUTES
+    Route::middleware(['role:admin'])->group(function () {
+        // Bank SOP Create/Edit/Delete
+        Route::get('/bank-sops/create', [AdminBankSopController::class, 'create'])->name('bank-sops.create');
+        Route::post('/bank-sops', [AdminBankSopController::class, 'store'])->name('bank-sops.store');
+        Route::get('/bank-sops/{bankSop}/edit', [AdminBankSopController::class, 'edit'])->name('bank-sops.edit');
+        Route::put('/bank-sops/{bankSop}', [AdminBankSopController::class, 'update'])->name('bank-sops.update');
+        Route::delete('/bank-sops/{bankSop}', [AdminBankSopController::class, 'destroy'])->name('bank-sops.destroy');
+
+        // Form Fields Builder
+        Route::post('/bank-sops/{bankSop}/fields', [AdminBankSopController::class, 'storeField'])->name('bank-sops.fields.store');
+        Route::delete('/bank-sops/fields/{field}', [AdminBankSopController::class, 'destroyField'])->name('bank-sops.fields.destroy');
+
+        Route::resource('users', AdminUserController::class);
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+
+        // Laporan
+        Route::resource('report-types', ReportTypeController::class);
+        Route::resource('report-requests', ReportRequestController::class);
+
+        // Video
+        Route::resource('videos', AdminVideoController::class);
+        Route::post('/videos/{video}/approve', [AdminVideoController::class, 'approve'])->name('videos.approve');
+        Route::post('/videos/{video}/reject', [AdminVideoController::class, 'reject'])->name('videos.reject');
+
+        // Bank Data (E-Library)
+        Route::resource('documents', App\Http\Controllers\Admin\DocumentController::class)->except('show');
+    });
+
+    // These dynamic routes must be placed AFTER /bank-sops/create to prevent matching 'create' as an ID
+    Route::get('/bank-sops/{bankSop}', [AdminBankSopController::class, 'show'])->name('bank-sops.show');
+    Route::get('/bank-sops/{bankSop}/download', [AdminBankSopController::class, 'download'])->name('bank-sops.download');
+    Route::get('/bank-sops/{bankSop}/monitor', [AdminBankSopController::class, 'monitor'])->name('bank-sops.monitor');
+    Route::get('/bank-sops/{bankSop}/export', [AdminBankSopController::class, 'export'])->name('bank-sops.export');
 });
 
 // === BPP ROUTES ===
@@ -79,6 +112,7 @@ use App\Http\Controllers\Bpp\NewsController as BppNewsController;
 use App\Http\Controllers\Bpp\ProfileController as BppProfileController;
 use App\Http\Controllers\Bpp\ReportController as BppReportController;
 use App\Http\Controllers\Bpp\VideoController as BppVideoController;
+use App\Http\Controllers\Bpp\BankSopController as BppBankSopController;
 
 Route::middleware(['auth', 'role:bpp'])->prefix('dashboard')->name('bpp.')->group(function () {
     Route::get('/', [BppDashboardController::class, 'index'])->name('dashboard');
@@ -105,4 +139,10 @@ Route::middleware(['auth', 'role:bpp'])->prefix('dashboard')->name('bpp.')->grou
 
     // Bank Data (E-Library)
     Route::get('/documents', [App\Http\Controllers\Bpp\DocumentController::class, 'index'])->name('documents.index');
+
+    // Bank SOP
+    Route::get('/bank-sops', [BppBankSopController::class, 'index'])->name('bank-sops.index');
+    Route::get('/bank-sops/{bankSop}', [BppBankSopController::class, 'show'])->name('bank-sops.show');
+    Route::get('/bank-sops/{bankSop}/download', [BppBankSopController::class, 'download'])->name('bank-sops.download');
+    Route::post('/bank-sops/{bankSop}/submit', [BppBankSopController::class, 'submit'])->name('bank-sops.submit');
 });
