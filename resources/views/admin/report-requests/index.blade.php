@@ -19,8 +19,15 @@
         <td>@if($req->status==='active')<span class="badge badge-success">Aktif</span>@else<span class="badge" style="background:#E5E7EB;color:#374151;">Ditutup</span>@endif</td>
         <td><span class="badge badge-info">{{ $req->submissions_count }}</span></td>
         <td>
-            <a href="{{ route('admin.report-requests.show', $req) }}" class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;" title="Lihat Progress"><i class="fa-solid fa-chart-bar"></i></a>
-            <a href="{{ route('admin.report-requests.edit', $req) }}" class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;"><i class="fa-solid fa-pen"></i></a>
+            <div style="display:flex;gap:4px;">
+                <a href="{{ route('admin.report-requests.show', $req) }}" class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;" title="Lihat Progress"><i class="fa-solid fa-chart-bar"></i></a>
+                <a href="{{ route('admin.report-requests.edit', $req) }}" class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;"><i class="fa-solid fa-pen"></i></a>
+                <form action="{{ route('admin.report-requests.destroy', $req) }}" method="POST" style="margin:0;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus permintaan laporan ini? Semua data laporan yang masuk juga akan terhapus!');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;color:var(--color-danger);border-color:var(--color-danger);" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                </form>
+            </div>
         </td>
     </tr>
     @empty <tr><td colspan="8" style="text-align:center;color:var(--color-text-muted);padding:var(--sp-6);">Belum ada permintaan laporan.</td></tr>@endforelse

@@ -112,6 +112,13 @@ class ReportRequestController extends Controller
 
     public function destroy(ReportRequest $reportRequest)
     {
+        // Secara eksplisit menghapus submissions dan versions agar event deleting() berjalan dan file terhapus
+        foreach ($reportRequest->submissions()->with('versions')->get() as $submission) {
+            foreach ($submission->versions as $version) {
+                $version->delete();
+            }
+            $submission->delete();
+        }
         $reportRequest->delete();
         return redirect()->route('admin.report-requests.index')->with('success', 'Permintaan laporan berhasil dihapus.');
     }

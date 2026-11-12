@@ -6,6 +6,15 @@
 
 @if(session('success'))<div style="margin-bottom:var(--sp-6);background:#DCFCE7;color:#166534;padding:var(--sp-3);border-radius:var(--rounded);font-size:0.85rem;">{{ session('success') }}</div>@endif
 
+@if($errors->any())
+<div style="margin-bottom:var(--sp-6);background:#FEE2E2;color:#991B1B;padding:var(--sp-3);border-radius:var(--rounded);font-size:0.85rem;">
+    <ul style="margin:0;padding-left:1.5rem;">
+        @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
 <div class="grid-2" style="gap:var(--sp-6);">
     {{-- Panel Kiri: Info & Form Validasi --}}
     <div>

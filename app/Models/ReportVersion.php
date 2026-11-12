@@ -11,6 +11,17 @@ class ReportVersion extends Model
 
     protected $guarded = [];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($version) {
+            if ($version->file_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($version->file_path)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($version->file_path);
+            }
+        });
+    }
+
     public function submission()
     {
         return $this->belongsTo(ReportSubmission::class, 'report_submission_id');

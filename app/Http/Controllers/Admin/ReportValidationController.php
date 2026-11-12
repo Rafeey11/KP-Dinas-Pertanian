@@ -125,12 +125,11 @@ class ReportValidationController extends Controller
         }
 
         $version = $submission->versions()->findOrFail($versionId);
-        $filePath = storage_path('app/' . $version->file_path);
 
-        if (!file_exists($filePath)) {
+        if (!\Illuminate\Support\Facades\Storage::disk('local')->exists($version->file_path)) {
             return back()->withErrors(['error' => 'File tidak ditemukan.']);
         }
 
-        return response()->download($filePath, $version->file_name);
+        return \Illuminate\Support\Facades\Storage::disk('local')->download($version->file_path, $version->file_name);
     }
 }
